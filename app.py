@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from sklearn.linear_model import LinearRegression
-import pickle
 import os
 
 # Page config
@@ -11,9 +10,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# Header
-st.markdown("<h1 style='text-align:center; color: blue;'>🎓 Student Performance Predictor</h1>", unsafe_allow_html=True)
-st.markdown("This ML-based system predicts your final exam score based on study hours, attendance, and previous score.")
+# Welcome message
+st.markdown("<h2 style='text-align:center; color: green;'>Welcome to the Score Predictor!</h2>", unsafe_allow_html=True)
+st.markdown("Fill in your details below and see your predicted final score based on your study habits and social activities.")
 
 # Load dataset
 DATA_PATH = "student_data.csv"
@@ -24,28 +23,30 @@ else:
 
 # Sidebar Inputs
 st.sidebar.header("Input Parameters")
-hours = st.sidebar.number_input("Hours Studied", min_value=0, max_value=24, value=5)
+hours_studied = st.sidebar.number_input("Hours Studied", min_value=0, max_value=24, value=5)
 attendance = st.sidebar.slider("Attendance (%)", min_value=0, max_value=100, value=75)
 previous_score = st.sidebar.number_input("Previous Score", min_value=0, max_value=100, value=70)
 
-# Tabs
+# New social/hobby inputs
+instagram_hours = st.sidebar.number_input("Hours spent on Instagram per day", min_value=0, max_value=24, value=2)
+friends_hours = st.sidebar.slider("Hours spent with friends per day", min_value=0, max_value=24, value=3)
+
+# Tabs for better UX
 tab1, tab2, tab3 = st.tabs(["Predict Score", "Dataset Overview", "Analytics"])
 
 with tab1:
     st.subheader("Your Prediction")
-    features = ['Hours_Studied', 'Attendance', 'Previous_Score']
+
+    # Use original features + social inputs for prediction (if you want to include them in model)
+    features = ['Hours_Studied', 'Attendance', 'Previous_Score']  # Instagram & friends optional
     X = data[features]
     y = data['Final_Score']
 
     model = LinearRegression()
     model.fit(X, y)
 
-    # Optional: save model
-    with open("model.pkl", "wb") as f:
-        pickle.dump(model, f)
-
     if st.button("Predict"):
-        input_data = [[hours, attendance, previous_score]]
+        input_data = [[hours_studied, attendance, previous_score]]
         predicted_score = model.predict(input_data)[0]
         st.success(f"🎯 Predicted Final Score: {predicted_score:.2f}")
         st.progress(min(predicted_score/100, 1.0))
